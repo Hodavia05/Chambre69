@@ -1,7 +1,34 @@
 import { useState, useEffect, useRef } from 'react';
-import { supabase, Category, Product, ProductVariant } from '../lib/supabase';
 import { useCart } from '../context/CartContext';
 import { FadeInOnLoad, RevealOnScroll } from '../components/Animations';
+
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  created_at: string;
+}
+
+interface Product {
+  id: string;
+  category_id: string;
+  name: string;
+  slug: string;
+  description: string;
+  care_instructions: string;
+  image_url: string;
+  is_featured: boolean;
+  created_at: string;
+}
+
+interface ProductVariant {
+  id: string;
+  product_id: string;
+  color: string;
+  sizes: string[];
+  created_at: string;
+}
 
 interface ShopPageProps {
   onNavigate: (page: string, data?: any) => void;
@@ -28,55 +55,6 @@ export const ShopPage = ({ onNavigate, initialCategorySlug }: ShopPageProps) => 
   const categoryScrollRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const categorySectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const [activeProductIndexes, setActiveProductIndexes] = useState<Record<string, number>>({});
-
-  useEffect(() => {
-    loadCategoriesAndProducts();
-  }, []);
-
-  const loadCategoriesAndProducts = async () => {
-    // Charger toutes les catégories
-    const { data: categoriesData } = await supabase.from('categories').select('*');
-    if (!categoriesData) return;
-
-    // Trier selon l'ordre défini
-    const sortedCategories = categoryOrder
-      .map(name => categoriesData.find(c => c.name === name))
-      .filter(Boolean) as Category[];
-    setCategories(sortedCategories);
-
-    // Pour chaque catégorie, charger les produits et leurs variants (optionnels)
-    const productsMap: Record<string, (Product & { variant?: ProductVariant })[]> = {};
-    for (const cat of sortedCategories) {
-      const { data: productsData } = await supabase
-        .from('products')
-        .select('*')
-        .eq('category_id', cat.id);
-
-      if (productsData && productsData.length > 0) {
-        const productsWithVariants = await Promise.all(
-          productsData.map(async (product) => {
-            // Récupérer le premier variant (s'il existe)
-            const { data: variants } = await supabase
-              .from('product_variants')
-              .select('*')
-              .eq('product_id', product.id)
-              .limit(1)
-              .maybeSingle();
-            return { ...product, variant: variants || undefined };
-          })
-        );
-        productsMap[cat.id] = productsWithVariants;
-      } else {
-        productsMap[cat.id] = [];
-      }
-    }
-    setProductsByCategory(productsMap);
-
-    // Initialiser les index actifs
-    const initialIndexes: Record<string, number> = {};
-    sortedCategories.forEach(cat => { initialIndexes[cat.id] = 0; });
-    setActiveProductIndexes(initialIndexes);
-  };
 
   const handleAddToCart = (product: Product, variant?: ProductVariant) => {
     // Si pas de variant, on crée un variant par défaut
