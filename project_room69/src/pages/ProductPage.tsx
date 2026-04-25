@@ -1,7 +1,26 @@
 import { useState, useEffect } from 'react';
-import { supabase, Product, ProductVariant } from '../lib/supabase';
 import { MessageCircle } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+
+interface Product {
+  id: string;
+  category_id: string;
+  name: string;
+  slug: string;
+  description: string;
+  care_instructions: string;
+  image_url: string;
+  is_featured: boolean;
+  created_at: string;
+}
+
+interface ProductVariant {
+  id: string;
+  product_id: string;
+  color: string;
+  sizes: string[];
+  created_at: string;
+}
 
 interface ProductPageProps {
   slug: string;
@@ -13,34 +32,6 @@ export const ProductPage = ({ slug, onNavigate }: ProductPageProps) => {
   const [variant, setVariant] = useState<ProductVariant | null>(null);
   const [selectedSize, setSelectedSize] = useState<string>('');
   const { addToCart } = useCart();
-
-  useEffect(() => {
-    loadProduct();
-  }, [slug]);
-
-  const loadProduct = async () => {
-    const { data: productData } = await supabase
-      .from('products')
-      .select('*')
-      .eq('slug', slug)
-      .maybeSingle();
-
-    if (productData) {
-      setProduct(productData);
-
-      const { data: variantData } = await supabase
-        .from('product_variants')
-        .select('*')
-        .eq('product_id', productData.id)
-        .limit(1)
-        .maybeSingle();
-
-      if (variantData) {
-        setVariant(variantData);
-        setSelectedSize(variantData.sizes[0]);
-      }
-    }
-  };
 
   const handleAddToCart = () => {
     if (product && variant && selectedSize) {
