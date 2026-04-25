@@ -1,5 +1,31 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { CartItem, Product, ProductVariant } from '../lib/supabase';
+
+interface Product {
+  id: string;
+  category_id: string;
+  name: string;
+  slug: string;
+  description: string;
+  care_instructions: string;
+  image_url: string;
+  is_featured: boolean;
+  created_at: string;
+}
+
+interface ProductVariant {
+  id: string;
+  product_id: string;
+  color: string;
+  sizes: string[];
+  created_at: string;
+}
+
+interface CartItem {
+  product: Product;
+  variant: ProductVariant;
+  quantity: number;
+  selectedSize: string;
+}
 
 interface CartContextType {
   cart: CartItem[];
