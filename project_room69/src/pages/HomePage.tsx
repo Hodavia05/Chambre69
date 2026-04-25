@@ -1,8 +1,27 @@
 import { useState, useEffect, useRef } from 'react';
-import { supabase, Category, Product, ProductVariant } from '../lib/supabase';
 import { MessageCircle } from 'lucide-react';
 import { FadeInOnLoad, RevealOnScroll } from '../components/Animations';
 import { useCart } from '../context/CartContext';
+
+interface Product {
+  id: string;
+  category_id: string;
+  name: string;
+  slug: string;
+  description: string;
+  care_instructions: string;
+  image_url: string;
+  is_featured: boolean;
+  created_at: string;
+}
+
+interface ProductVariant {
+  id: string;
+  product_id: string;
+  color: string;
+  sizes: string[];
+  created_at: string;
+}
 
 interface Brand {
   id: number;
@@ -212,7 +231,6 @@ interface HomePageProps {
 }
 
 export const HomePage = ({ onNavigate }: HomePageProps) => {
-  const [categories, setCategories] = useState<Category[]>([]);
   const [featuredProducts, setFeaturedProducts] = useState<(Product & { variant: ProductVariant })[]>([]);
   const { addToCart } = useCart();
 
@@ -222,39 +240,6 @@ export const HomePage = ({ onNavigate }: HomePageProps) => {
   const brandScrollRef = useRef<HTMLDivElement>(null);
   const [activeBrandIndex, setActiveBrandIndex] = useState(0);
   const [selectedBrand, setSelectedBrand] = useState<Brand | null>(null);
-
-  // Chargement des données
-  useEffect(() => {
-    loadCategories();
-    loadFeaturedProducts();
-  }, []);
-
-  const loadCategories = async () => {
-    const { data } = await supabase.from('categories').select('*').order('name');
-    if (data) setCategories(data);
-  };
-
-  const loadFeaturedProducts = async () => {
-    const { data: products } = await supabase
-      .from('products')
-      .select('*')
-      .eq('is_featured', true)
-      .limit(6);
-    if (products) {
-      const productsWithVariants = await Promise.all(
-        products.map(async (product) => {
-          const { data: variants } = await supabase
-            .from('product_variants')
-            .select('*')
-            .eq('product_id', product.id)
-            .limit(1)
-            .maybeSingle();
-          return { ...product, variant: variants! };
-        })
-      );
-      setFeaturedProducts(productsWithVariants);
-    }
-  };
 
   const handleAddToCart = (product: Product, variant: ProductVariant) => {
     addToCart(product, variant, variant.sizes[0]);
