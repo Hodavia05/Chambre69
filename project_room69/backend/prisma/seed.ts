@@ -7,11 +7,11 @@ const prisma = new PrismaClient();
 
 const ROOT_PATH = path.join(__dirname, '../../..');
 
-// Explicitly exclude these folders from being treated as brands
-const EXCLUDED_FOLDERS = ['.git', 'project_room69', 'node_modules', 'backend', '.gemini', 'artifacts'];
+// Explicitly exclude these folders
+const EXCLUDED_FOLDERS = ['.git', 'project_room69', 'node_modules', 'backend', '.gemini', 'artifacts', '.vscode'];
 
 async function main() {
-  console.log('Starting dynamic seeding with full architecture scan...');
+  console.log('--- STARTING DYNAMIC SEEDING ---');
   
   await prisma.productVariant.deleteMany();
   await prisma.product.deleteMany();
@@ -25,38 +25,43 @@ async function main() {
   const rootItems = fs.readdirSync(ROOT_PATH, { withFileTypes: true });
   
   for (const item of rootItems) {
-    if (item.isDirectory() && !item.name.startsWith('.') && !EXCLUDED_FOLDERS.includes(item.name)) {
+    if (item.isDirectory() && !item.name.startsWith('.') && !EXCLUDED_FOLDERS.includes(item.name.trim())) {
       const brandName = item.name.trim();
-      console.log(`Processing folder as brand: "${brandName}"`);
+      console.log(`> Found brand folder: "${item.name}" (Display Name: "${brandName}")`);
       
       const brand = await prisma.brand.create({
         data: {
           name: brandName,
-          description: `Collection ${brandName}`
+          description: `Maison ${brandName}`
         }
       });
 
       const brandPath = path.join(ROOT_PATH, item.name);
       await scanAndCreateProducts(brandPath, brand.id, defaultCategory.id);
 
-      // Update brand with a representative image
+      // Representative Image for the Brand Bubble
       const firstProduct = await prisma.product.findFirst({
         where: { brand_id: brand.id },
         select: { image_url: true }
       });
+      
       if (firstProduct) {
+        console.log(`  [OK] Set representative image for ${brandName}`);
         await prisma.brand.update({
           where: { id: brand.id },
           data: { image_url: firstProduct.image_url }
         });
+      } else {
+        console.warn(`  [WARN] No images found for ${brandName}`);
       }
     }
   }
 
-  console.log('Dynamic seed completed successfully');
+  console.log('--- SEEDING COMPLETED ---');
 }
 
 async function scanAndCreateProducts(dir: string, brandId: string, categoryId: string, subcategory?: string, collection?: string) {
+  if (!fs.existsSync(dir)) return;
   const items = fs.readdirSync(dir, { withFileTypes: true });
   
   for (const item of items) {
@@ -64,11 +69,8 @@ async function scanAndCreateProducts(dir: string, brandId: string, categoryId: s
     
     if (item.isDirectory()) {
       if (!subcategory) {
-        // First level folder is subcategory
         await scanAndCreateProducts(fullPath, brandId, categoryId, item.name, collection);
       } else {
-        // Any deeper folder is treated as a collection
-        // We accumulate collection name if it's multiple levels deep
         const newCollection = collection ? `${collection} - ${item.name}` : item.name;
         await scanAndCreateProducts(fullPath, brandId, categoryId, subcategory, newCollection);
       }
@@ -83,14 +85,11 @@ async function createProduct(filePath: string, brandId: string, categoryId: stri
   const fileName = path.basename(filePath, path.extname(filePath));
   const hash = crypto.createHash('md5').update(relativePath).digest('hex').substring(0, 6);
   
-  // Clean up names
   const cleanSub = subcategory ? subcategory.trim() : undefined;
   let cleanCol = collection ? collection.trim() : undefined;
   
-  // Improved collection cleaning
   if (cleanCol) {
     cleanCol = cleanCol.replace(/collection/gi, '').trim();
-    // Remove extra dashes if any
     cleanCol = cleanCol.replace(/-+/g, '-').replace(/^-|-$/g, '').trim();
     if (cleanCol) {
       cleanCol = cleanCol.charAt(0).toUpperCase() + cleanCol.slice(1);
@@ -99,9 +98,12 @@ async function createProduct(filePath: string, brandId: string, categoryId: stri
     }
   }
 
-  // Ensure slug is unique and safe
-  const brandPart = brandId.substring(0,4);
-  const slug = `p-${brandPart}-${hash}`;
+  // Generate a strictly unique slug
+  const slug = `p-${hash}`;
+
+  // Ensure the URL is correctly encoded for the frontend
+  const encodedPath = relativePath.split('/').map(segment => encodeURIComponent(segment)).join('/');
+  const imageUrl = `http://localhost:5000/images/${encodedPath}`;
 
   try {
     await prisma.product.create({
@@ -112,14 +114,14 @@ async function createProduct(filePath: string, brandId: string, categoryId: stri
         subcategory: cleanSub,
         collection: cleanCol || 'Général',
         category_id: categoryId,
-        image_url: `http://localhost:5000/images/${relativePath}`,
+        image_url: imageUrl,
         variants: {
           create: [{ color: 'Standard', sizes: ['S', 'M', 'L'] }]
         }
       }
     });
   } catch (e) {
-    // console.error(`Error creating product for ${relativePath}:`, e);
+    // console.error(`Failed to create ${fileName}:`, e);
   }
 }
 
