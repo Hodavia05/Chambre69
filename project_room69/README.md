@@ -1,82 +1,68 @@
-# Chambre 69 - Boutique de Lingerie Haut de Gamme
+# 🏛️ Chambre 69 - Boutique de Lingerie Haut de Gamme
 
-Bienvenue dans le projet **Chambre 69**, une boutique en ligne élégante et moderne dédiée à la lingerie de luxe.
-
-## 🚀 Technologies Utilisées
-
-### Frontend
-- **React** (avec TypeScript)
-- **Vite**
-- **Tailwind CSS** (pour le style)
-- **Lucide React** (pour les icônes)
-- **Framer Motion** (pour les animations fluides)
-
-### Backend
-- **Node.js**
-- **Express**
-- **TypeScript**
-- **PostgreSQL** (Base de données)
-- **Prisma** (ORM)
-
-## 📁 Structure du Projet
-
-```
-project_room69/
-├── backend/                # Serveur Node.js & Configuration Base de données
-│   ├── prisma/             # Schéma et migrations Prisma
-│   ├── src/                # Code source du backend (Express)
-│   └── .env                # Variables d'environnement (DB URL, Port)
-├── src/                    # Code source du frontend (React)
-│   ├── components/         # Composants UI réutilisables
-│   ├── context/            # Gestion de l'état (Panier)
-│   ├── pages/              # Pages principales (Shop, Home, etc.)
-│   └── config.ts           # Configuration du frontend (API URL)
-├── public/                 # Assets statiques
-└── package.json            # Dépendances frontend
-```
-
-## 🛠️ Installation et Configuration
-
-### 1. Prérequis
-- Node.js (v18+)
-- PostgreSQL installé et en cours d'exécution
-
-### 2. Configuration du Backend
-1. Allez dans le dossier backend : `cd backend`
-2. Installez les dépendances : `npm install`
-3. Configurez votre base de données dans le fichier `.env` :
-   ```env
-   DATABASE_URL="postgresql://votre_utilisateur:votre_mot_de_passe@localhost:5432/votre_base_de_donnees?schema=public"
-   ```
-4. Générez le client Prisma : `npm run prisma:generate`
-5. Appliquez les migrations : `npm run prisma:migrate`
-6. (Optionnel) Peuplez la base de données avec des données de test : `npm run prisma:seed`
-7. Lancez le serveur : `npm run dev`
-
-### 3. Configuration du Frontend
-1. Revenez à la racine : `cd ..`
-2. Installez les dépendances : `npm install`
-3. Lancez l'application : `npm run dev`
-
-## 🔄 Peuplement Dynamique de la Base de Données
-
-Le script de "seed" (`backend/prisma/seed.ts`) a été conçu pour parcourir automatiquement les dossiers d'images à la racine du dépôt :
-- **Marques concernées** : Curvy Kate, Dita Von Teese, Elomi, Empreinte, Fantaisie, Freya, Louisa Bracq, Wacoal, Ysabel Mora.
-- **Fonctionnement** : Il scanne chaque dossier et sous-dossier (ex: "Soutien-gorge", "Slips") et crée automatiquement un produit en base de données pour chaque image trouvée.
-- **Mise à jour** : Pour rafraîchir la liste des produits après avoir ajouté des images, relancez simplement `npm run prisma:seed` dans le dossier `backend`.
-
-## 🤖 CI/CD (GitHub Actions)
-
-Un workflow GitHub Actions est configuré dans `.github/workflows/main.yml` pour :
-- Vérifier la validité du build (Frontend & Backend) à chaque push.
-- S'assurer que le client Prisma est correctement généré.
-
-## ✨ Fonctionnalités
-- **Navigation fluide** : SPA avec transitions animées.
-- **Boutique complète** : Affichage par marques avec filtrage par sous-catégories.
-- **Scan automatique** : Toutes les images déposées dans les dossiers racines sont automatiquement intégrées à la boutique via le script de seed.
-- **Panier dynamique** : Ajout/suppression d'articles en temps réel.
-- **Backend robuste** : API REST avec TypeScript, PostgreSQL et Prisma.
+Bienvenue sur la plateforme officielle de **Chambre 69**, une expérience numérique de luxe dédiée à l'élégance et au raffinement.
 
 ---
-Développé avec ❤️ pour Chambre 69.
+
+## 📖 Pour les Visiteurs (Clients)
+**Chambre 69** est conçue pour vous offrir une navigation fluide et immersive dans l'univers de la lingerie de luxe.
+- **Boutique Intuitive** : Parcourez nos collections par marque (Curvy Kate, Dita Von Teese, Elomi, etc.) avec des filtres intelligents par catégorie et collection.
+- **Détails Produits** : Cliquez sur n'importe quel article pour découvrir ses secrets (matières, entretien, tailles).
+- **Commande WhatsApp** : Un coup de cœur ? Commandez directement via WhatsApp en un clic pour un service personnalisé.
+- **Expérience Premium** : Un design épuré, lumineux et réactif pour un confort visuel optimal.
+
+---
+
+## 🛠️ Pour les Développeurs (Débutants à Seniors)
+
+### Architecture Technique
+Le projet utilise une stack moderne et performante :
+- **Frontend** : React 18, TypeScript, Tailwind CSS, Framer Motion (animations).
+- **Backend** : Node.js (Express), TypeScript, Prisma ORM.
+- **Base de Données** : PostgreSQL.
+
+### Installation Rapide
+1. **Clonage** : `git clone https://github.com/votre-repo/Chambre69.git`
+2. **Frontend** :
+   ```bash
+   npm install
+   npm run dev
+   ```
+3. **Backend** :
+   ```bash
+   cd backend
+   npm install
+   npx prisma migrate dev
+   npm run prisma:seed # Scan automatique des images racine
+   npm run dev
+   ```
+
+### 🧠 Logique de Scan Dynamique (Seed)
+Le script `backend/prisma/seed.ts` est le cœur de l'automatisation. Il parcourt récursivement les dossiers de marques à la racine du dépôt :
+- Il détecte automatiquement les **Marques**, **Sous-catégories** et **Collections**.
+- Il supporte les formats `.jpg`, `.png`, `.webp` et `.avif`.
+- Il génère des URLs encodées pour gérer les espaces et caractères spéciaux dans les noms de dossiers.
+
+---
+
+## 🔐 Système d'Authentification
+Nous avons implémenté une authentification sécurisée et esthétique :
+- **Glassmorphisme** : Formulaires de connexion/inscription avec effet de verre dépoli.
+- **Sécurité** : Hachage des mots de passe avec `bcryptjs` et gestion des sessions via `JSON Web Tokens (JWT)`.
+- **Persistance** : Session utilisateur sauvegardée localement pour une navigation sans interruption.
+
+---
+
+## 🎨 Guide de Style (Code Couleur)
+- **Fond** : `#FDFDFD` (Blanc cassé / Crème)
+- **Accent principal** : `#C9A96E` (Or Chambre 69)
+- **Texte** : `#111111` (Noir Profond) / `#999999` (Gris Doux)
+- **Typographie** : Serif pour les titres (Élégance), Sans-serif pour le corps (Lisibilité).
+
+---
+
+## 🤖 CI/CD & Déploiement
+Un workflow **GitHub Actions** est configuré dans `.github/workflows/main.yml` pour valider chaque build automatiquement, garantissant la stabilité du projet à chaque mise à jour.
+
+---
+*Développé avec passion pour l'élégance.*
