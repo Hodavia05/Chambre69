@@ -148,14 +148,14 @@ export const ShopPage = ({ onNavigate }: ShopPageProps) => {
                   onClick={() => scrollToBrand(brand.id)}
                   className="group cursor-pointer flex flex-col items-center gap-6"
                 >
-                  <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-gray-100 group-hover:border-[#C9A96E] group-hover:scale-110 transition-all duration-700 shadow-lg relative">
+                  <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-[#C9A96E]/40 group-hover:border-[#C9A96E] group-hover:scale-110 transition-all duration-700 shadow-[0_0_15px_rgba(201,169,110,0.1)] group-hover:shadow-[0_0_25px_rgba(201,169,110,0.3)] relative">
                     <img
                       src={brand.image_url || 'https://via.placeholder.com/150?text=Indisponible'}
                       alt={brand.name}
                       className="w-full h-full object-cover transition-all duration-700 group-hover:brightness-110"
                       onError={(e) => (e.currentTarget.src = 'https://via.placeholder.com/150?text=' + brand.name)}
                     />
-                    <div className="absolute inset-0 bg-[#C9A96E]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <div className="absolute inset-0 border-2 border-transparent group-hover:border-[#C9A96E]/50 rounded-full transition-all duration-700"></div>
                   </div>
                   <h3 className="text-[10px] font-black text-gray-400 text-center uppercase tracking-[0.3em] group-hover:text-[#C9A96E] transition-colors">
                     {brand.name}
