@@ -7,6 +7,9 @@ const prisma = new PrismaClient();
 
 const ROOT_PATH = path.join(__dirname, '../../..');
 
+// Explicitly exclude these folders from being treated as brands
+const EXCLUDED_FOLDERS = ['.git', 'project_room69', 'node_modules', 'backend', '.gemini', 'artifacts'];
+
 async function main() {
   console.log('Starting dynamic seeding with full architecture scan...');
   
@@ -22,9 +25,9 @@ async function main() {
   const rootItems = fs.readdirSync(ROOT_PATH, { withFileTypes: true });
   
   for (const item of rootItems) {
-    if (item.isDirectory() && !item.name.startsWith('.') && item.name !== 'project_room69' && item.name !== 'node_modules') {
-      const brandName = item.name.trim(); // We'll use the trimmed name for display but path needs the real name
-      console.log(`Processing folder as brand: "${item.name}"`);
+    if (item.isDirectory() && !item.name.startsWith('.') && !EXCLUDED_FOLDERS.includes(item.name)) {
+      const brandName = item.name.trim();
+      console.log(`Processing folder as brand: "${brandName}"`);
       
       const brand = await prisma.brand.create({
         data: {
@@ -60,16 +63,14 @@ async function scanAndCreateProducts(dir: string, brandId: string, categoryId: s
     const fullPath = path.join(dir, item.name);
     
     if (item.isDirectory()) {
-      // Determine if this is a subcategory or a collection
-      // Strategy: if we don't have a subcategory yet, this is likely one.
-      // If we have a subcategory but no collection, this is a collection.
       if (!subcategory) {
+        // First level folder is subcategory
         await scanAndCreateProducts(fullPath, brandId, categoryId, item.name, collection);
-      } else if (!collection) {
-        await scanAndCreateProducts(fullPath, brandId, categoryId, subcategory, item.name);
       } else {
-        // Deeply nested collection or images
-        await scanAndCreateProducts(fullPath, brandId, categoryId, subcategory, collection);
+        // Any deeper folder is treated as a collection
+        // We accumulate collection name if it's multiple levels deep
+        const newCollection = collection ? `${collection} - ${item.name}` : item.name;
+        await scanAndCreateProducts(fullPath, brandId, categoryId, subcategory, newCollection);
       }
     } else if (item.isFile() && isImage(item.name)) {
       await createProduct(fullPath, brandId, categoryId, subcategory, collection);
@@ -85,13 +86,22 @@ async function createProduct(filePath: string, brandId: string, categoryId: stri
   // Clean up names
   const cleanSub = subcategory ? subcategory.trim() : undefined;
   let cleanCol = collection ? collection.trim() : undefined;
-  if (cleanCol && cleanCol.toLowerCase().includes('collection')) {
-    cleanCol = cleanCol.replace(/collection/i, '').trim();
-    cleanCol = cleanCol.charAt(0).toUpperCase() + cleanCol.slice(1);
+  
+  // Improved collection cleaning
+  if (cleanCol) {
+    cleanCol = cleanCol.replace(/collection/gi, '').trim();
+    // Remove extra dashes if any
+    cleanCol = cleanCol.replace(/-+/g, '-').replace(/^-|-$/g, '').trim();
+    if (cleanCol) {
+      cleanCol = cleanCol.charAt(0).toUpperCase() + cleanCol.slice(1);
+    } else {
+      cleanCol = undefined;
+    }
   }
 
-  const slugBasis = `${brandId.substring(0,4)}-${cleanSub || 'main'}-${cleanCol || 'none'}-${fileName}`.toLowerCase().replace(/\s+/g, '-');
-  const slug = `${slugBasis}-${hash}`;
+  // Ensure slug is unique and safe
+  const brandPart = brandId.substring(0,4);
+  const slug = `p-${brandPart}-${hash}`;
 
   try {
     await prisma.product.create({
@@ -100,7 +110,7 @@ async function createProduct(filePath: string, brandId: string, categoryId: stri
         slug: slug,
         brand_id: brandId,
         subcategory: cleanSub,
-        collection: cleanCol,
+        collection: cleanCol || 'Général',
         category_id: categoryId,
         image_url: `http://localhost:5000/images/${relativePath}`,
         variants: {
