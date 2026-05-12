@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { MessageCircle } from 'lucide-react';
 import { FadeInOnLoad, RevealOnScroll } from '../components/Animations';
 import { useCart } from '../context/CartContext';
+import { API_URL } from '../config';
 
 interface Product {
   id: string;
@@ -233,6 +234,22 @@ interface HomePageProps {
 export const HomePage = ({ onNavigate }: HomePageProps) => {
   const [featuredProducts, setFeaturedProducts] = useState<(Product & { variant: ProductVariant })[]>([]);
   const { addToCart } = useCart();
+
+  useEffect(() => {
+    const fetchFeatured = async () => {
+      try {
+        const response = await fetch(`${API_URL}/products?featured=true`);
+        const data = await response.json();
+        setFeaturedProducts(data.map((p: any) => ({
+          ...p,
+          variant: p.variants[0]
+        })));
+      } catch (error) {
+        console.error('Error fetching featured products:', error);
+      }
+    };
+    fetchFeatured();
+  }, []);
 
   // Refs pour les carrousels
   const scrollContainerRef = useRef<HTMLDivElement>(null);
