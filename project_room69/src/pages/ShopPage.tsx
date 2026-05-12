@@ -54,9 +54,8 @@ export const ShopPage = ({ onNavigate }: ShopPageProps) => {
       try {
         const response = await fetch(`${API_URL}/shop-data`);
         const data = await response.json();
-        // Filter out any accidentally scanned system folders
         const cleanBrands = data.brands.filter((b: Brand) => 
-          !['backend', 'project_room69', 'node_modules', 'project'].includes(b.name.toLowerCase())
+          !['backend', 'project_room69', 'node_modules', 'project', '.git'].includes(b.name.toLowerCase())
         );
         setBrands(cleanBrands);
       } catch (error) {
@@ -119,7 +118,7 @@ export const ShopPage = ({ onNavigate }: ShopPageProps) => {
   if (loading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-xl font-serif text-gray-400 animate-pulse italic">Ouverture de la Chambre...</div>
+        <div className="text-xl font-serif text-[#C9A96E] animate-pulse italic">Chargement de votre univers de luxe...</div>
       </div>
     );
   }
@@ -128,19 +127,19 @@ export const ShopPage = ({ onNavigate }: ShopPageProps) => {
     <FadeInOnLoad>
       <div className="min-h-screen bg-white pt-36 pb-20 px-4 text-gray-900 font-sans">
         <div className="max-w-7xl mx-auto">
-          {/* Titre principal - Style Pure White & Gold */}
-          <div className="text-center mb-24">
-            <h1 className="text-5xl md:text-8xl font-bold font-serif text-gray-900 mb-8 tracking-tighter leading-none">
+          {/* Titre principal */}
+          <div className="text-center mb-24 group">
+            <h1 className="text-5xl md:text-8xl font-bold font-serif text-gray-900 mb-8 tracking-tighter leading-none transition-colors duration-500 hover:text-[#C9A96E] cursor-default">
               BIENVENUE DANS <br/>
-              <span className="text-[#C9A96E] italic">LA CHAMBRE</span>
+              <span className="italic">LA CHAMBRE</span>
             </h1>
-            <div className="w-24 h-px bg-[#C9A96E] mx-auto mb-8"></div>
-            <p className="text-gray-400 text-lg md:text-xl font-light max-w-2xl mx-auto italic tracking-wide">
+            <div className="w-24 h-px bg-[#C9A96E] mx-auto mb-8 transition-all duration-700 group-hover:w-48"></div>
+            <p className="text-gray-400 text-lg md:text-xl font-light max-w-2xl mx-auto italic tracking-wide transition-colors duration-500 hover:text-[#C9A96E]">
               "Découvrez notre collection complète de lingerie haut de gamme, servez-vous."
             </p>
           </div>
 
-          {/* Grille des Marques - Design Épuré */}
+          {/* Grille des Marques (Bulles) */}
           <RevealOnScroll delay={0.1}>
             <div className="mb-40 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-8">
               {brands.map((brand) => (
@@ -149,14 +148,16 @@ export const ShopPage = ({ onNavigate }: ShopPageProps) => {
                   onClick={() => scrollToBrand(brand.id)}
                   className="group cursor-pointer flex flex-col items-center gap-6"
                 >
-                  <div className="w-24 h-24 rounded-full overflow-hidden border border-gray-100 group-hover:border-[#C9A96E] group-hover:scale-110 transition-all duration-700 shadow-sm">
+                  <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-gray-100 group-hover:border-[#C9A96E] group-hover:scale-110 transition-all duration-700 shadow-lg relative">
                     <img
-                      src={brand.image_url || 'https://via.placeholder.com/150'}
+                      src={brand.image_url || 'https://via.placeholder.com/150?text=Indisponible'}
                       alt={brand.name}
-                      className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
+                      className="w-full h-full object-cover transition-all duration-700 group-hover:brightness-110"
+                      onError={(e) => (e.currentTarget.src = 'https://via.placeholder.com/150?text=' + brand.name)}
                     />
+                    <div className="absolute inset-0 bg-[#C9A96E]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                   </div>
-                  <h3 className="text-[10px] font-black text-gray-400 text-center uppercase tracking-[0.3em] group-hover:text-black transition-colors">
+                  <h3 className="text-[10px] font-black text-gray-400 text-center uppercase tracking-[0.3em] group-hover:text-[#C9A96E] transition-colors">
                     {brand.name}
                   </h3>
                 </div>
@@ -191,20 +192,18 @@ export const ShopPage = ({ onNavigate }: ShopPageProps) => {
                 >
                   {/* Header de Marque */}
                   <div className="text-center mb-16 px-4">
-                    <p className="text-[10px] font-bold text-[#C9A96E] uppercase tracking-[0.5em] mb-4">MAISON</p>
-                    <h2 className="text-5xl md:text-7xl font-serif font-bold text-gray-900 mb-12 tracking-tight">
+                    <h2 className="text-5xl md:text-7xl font-serif font-bold text-gray-900 mb-12 tracking-tight transition-colors duration-500 hover:text-[#C9A96E]">
                       {brand.name}
                     </h2>
                     
                     {/* Sélecteur de Sous-catégories */}
                     {subcategories.length > 0 && (
-                      <div className="flex flex-wrap justify-center gap-6 mb-12 border-y border-gray-50 py-6">
+                      <div className="flex flex-wrap justify-center gap-6 mb-12 border-y border-gray-100 py-6">
                         {subcategories.map((sub) => (
                           <button
                             key={sub}
                             onClick={() => {
                               setSelectedSubcategories(prev => ({ ...prev, [brand.id]: sub }));
-                              // Reset collection when subcategory changes
                               setSelectedCollections(prev => {
                                 const newCols = { ...prev };
                                 delete newCols[`${brand.id}-${sub}`];
@@ -213,30 +212,30 @@ export const ShopPage = ({ onNavigate }: ShopPageProps) => {
                             }}
                             className={`text-[10px] font-bold uppercase tracking-[0.3em] transition-all duration-300 relative pb-2 ${
                               selectedSub === sub
-                                ? 'text-black'
+                                ? 'text-[#C9A96E]'
                                 : 'text-gray-300 hover:text-gray-900'
                             }`}
                           >
                             {sub}
                             {selectedSub === sub && (
-                              <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-[#C9A96E]"></span>
+                              <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-[#C9A96E] animate-pulse"></span>
                             )}
                           </button>
                         ))}
                       </div>
                     )}
 
-                    {/* Sélecteur de Collections (Dropdown style for many collections) */}
+                    {/* Sélecteur de Collections */}
                     {collections.length > 1 && (
-                      <div className="flex flex-wrap justify-center gap-2 mb-12">
+                      <div className="flex flex-wrap justify-center gap-3 mb-12">
                         {collections.map((col) => (
                           <button
                             key={col}
                             onClick={() => setSelectedCollections(prev => ({ ...prev, [`${brand.id}-${selectedSub}`]: col }))}
-                            className={`px-6 py-2 rounded-full text-[9px] font-bold uppercase tracking-widest transition-all ${
+                            className={`px-6 py-2 rounded-full text-[9px] font-bold uppercase tracking-widest transition-all duration-500 ${
                               selectedCol === col
-                                ? 'bg-[#C9A96E] text-white shadow-lg'
-                                : 'bg-gray-50 text-gray-400 hover:bg-gray-100'
+                                ? 'bg-[#C9A96E] text-white shadow-xl scale-105'
+                                : 'bg-white text-gray-400 border border-gray-100 hover:border-[#C9A96E] hover:text-[#C9A96E]'
                             }`}
                           >
                             {col}
@@ -248,8 +247,8 @@ export const ShopPage = ({ onNavigate }: ShopPageProps) => {
 
                   {/* Affichage des Produits */}
                   {finalProducts.length === 0 ? (
-                    <div className="text-center py-20 bg-gray-50/30 rounded-3xl border border-gray-100">
-                      <p className="text-gray-300 italic font-serif">Aucun article disponible pour cette sélection.</p>
+                    <div className="text-center py-20 bg-gray-50/20 rounded-3xl border border-gray-50">
+                      <p className="text-gray-300 italic font-serif">Arrivage prochainement...</p>
                     </div>
                   ) : (
                     <div className="relative">
@@ -265,33 +264,33 @@ export const ShopPage = ({ onNavigate }: ShopPageProps) => {
                             <div
                               key={item.id}
                               className={`flex-shrink-0 transition-all duration-1000 ease-in-out scroll-snap-align-center ${
-                                isActive ? 'scale-100 opacity-100' : 'scale-90 opacity-20'
+                                isActive ? 'scale-100 opacity-100' : 'scale-90 opacity-30 grayscale hover:grayscale-0 hover:opacity-100'
                               }`}
                               style={{ width: '320px' }}
                             >
                               <div
-                                className="relative bg-white overflow-hidden rounded-[2rem] group cursor-pointer shadow-2xl"
+                                className="relative bg-white overflow-hidden rounded-[2.5rem] group cursor-pointer shadow-2xl border border-gray-100"
                                 style={{ height: '480px' }}
                                 onClick={() => onNavigate('product', { slug: item.slug })}
                               >
                                 <img
                                   src={item.image_url}
                                   alt={item.name}
-                                  className="w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-110"
-                                  onError={(e) => (e.currentTarget.src = 'https://via.placeholder.com/500?text=Indisponible')}
+                                  className="w-full h-full object-cover transition-all duration-[1500ms] group-hover:scale-110"
+                                  onError={(e) => (e.currentTarget.src = 'https://via.placeholder.com/500?text=' + item.name)}
                                 />
-                                <div className="absolute inset-0 bg-white/40 opacity-0 group-hover:opacity-100 transition-opacity duration-700 flex items-center justify-center">
-                                  <span className="bg-white text-black text-[10px] font-black uppercase tracking-[0.3em] px-8 py-4 rounded-full shadow-2xl">
-                                    Découvrir
-                                  </span>
+                                {/* Overlay On Hover - Should be transparent gold, not white */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-[#C9A96E]/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-700 flex flex-col justify-end p-10">
+                                  <span className="text-white text-[9px] font-black uppercase tracking-[0.4em] mb-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-700">Détails</span>
+                                  <div className="h-0.5 w-8 bg-white transform scale-x-0 group-hover:scale-x-100 transition-transform duration-700 origin-left"></div>
                                 </div>
                               </div>
                               <div className={`mt-10 text-center transition-all duration-1000 ${isActive ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-                                <h5 className="text-2xl font-serif font-bold text-gray-900 mb-2">{item.name}</h5>
-                                <p className="text-[9px] text-[#C9A96E] font-black uppercase tracking-[0.4em] mb-6">{selectedCol || 'Collection Exclusive'}</p>
+                                <h5 className="text-2xl font-serif font-bold text-gray-900 mb-2 transition-colors hover:text-[#C9A96E]">{item.name}</h5>
+                                <p className="text-[9px] text-[#C9A96E] font-black uppercase tracking-[0.4em] mb-8">{selectedCol || 'Collection Exclusive'}</p>
                                 <button
                                   onClick={(e) => { e.stopPropagation(); handleAddToCart(item, variant); }}
-                                  className="bg-black text-white text-[10px] font-bold uppercase tracking-[0.2em] px-10 py-4 rounded-full hover:bg-[#C9A96E] transition-all shadow-xl"
+                                  className="bg-black text-white text-[10px] font-bold uppercase tracking-[0.2em] px-10 py-4 rounded-full hover:bg-[#C9A96E] transition-all shadow-xl hover:-translate-y-1"
                                 >
                                   Ajouter au Panier
                                 </button>
