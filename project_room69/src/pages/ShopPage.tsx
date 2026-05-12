@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useCart } from '../context/CartContext';
 import { FadeInOnLoad, RevealOnScroll } from '../components/Animations';
 import { API_URL } from '../config';
+import { X, ShoppingBag, MessageCircle, ChevronRight, Info } from 'lucide-react';
 
 interface Product {
   id: string;
@@ -38,65 +39,78 @@ interface ShopPageProps {
   onNavigate: (page: string, data?: any) => void;
 }
 
-// Composant Modal pour les détails du produit
 const ProductModal = ({ product, onClose, onAddToCart }: { product: Product & { variants: ProductVariant[] }, onClose: () => void, onAddToCart: (p: Product, v: ProductVariant) => void }) => {
   const variant = product.variants[0] || { color: 'Standard', sizes: ['S', 'M', 'L'] };
   
   const handleWhatsApp = () => {
     const message = encodeURIComponent(`Bonjour Chambre 69, je souhaite commander l'article : ${product.name} (Marque: ${product.brand_id || ''})`);
-    window.open(`https://wa.me/22900000000?text=${message}`, '_blank'); // Remplacez par le vrai numéro
+    window.open(`https://wa.me/22900000000?text=${message}`, '_blank');
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-300">
-      <div className="bg-white rounded-[2.5rem] max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl flex flex-col md:flex-row relative">
-        <button onClick={onClose} className="absolute top-6 right-6 z-10 bg-white/80 backdrop-blur p-2 rounded-full hover:bg-white transition-colors">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-500">
+      <div className="bg-white rounded-[3rem] max-w-5xl w-full max-h-[90vh] overflow-hidden shadow-2xl flex flex-col md:flex-row relative border border-[#C9A96E]/20">
+        <button onClick={onClose} className="absolute top-8 right-8 z-10 bg-black text-white p-3 rounded-full hover:bg-[#C9A96E] transition-all shadow-xl hover:scale-110 active:scale-95">
+          <X className="w-5 h-5" />
         </button>
         
-        <div className="md:w-1/2 h-64 md:h-auto overflow-hidden">
-          <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+        <div className="md:w-1/2 h-80 md:h-auto overflow-hidden bg-gray-50">
+          <img src={product.image_url} alt={product.name} className="w-full h-full object-cover hover:scale-105 transition-transform duration-[3s]" />
         </div>
         
-        <div className="md:w-1/2 p-8 md:p-12 overflow-y-auto bg-white">
-          <h2 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-2">{product.name}</h2>
-          <p className="text-[#C9A96E] text-xs font-black uppercase tracking-[0.4em] mb-8">{product.collection || 'Collection Exclusive'}</p>
-          
-          <div className="space-y-6 mb-10">
-            <div>
-              <h4 className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Description</h4>
-              <p className="text-gray-600 text-sm leading-relaxed">{product.description || 'Une pièce d\'exception conçue pour sublimer votre élégance naturelle.'}</p>
+        <div className="md:w-1/2 p-10 md:p-16 overflow-y-auto bg-white flex flex-col">
+          <div className="mb-auto">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="w-8 h-px bg-[#C9A96E]"></span>
+              <p className="text-[#C9A96E] text-[10px] font-black uppercase tracking-[0.5em]">{product.collection || 'Exclusivité'}</p>
             </div>
+            <h2 className="text-4xl md:text-5xl font-serif font-bold text-gray-900 mb-6 leading-tight">{product.name}</h2>
             
-            <div className="grid grid-cols-2 gap-6">
-              <div>
-                <h4 className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Couleur</h4>
-                <p className="text-gray-900 font-medium">{variant.color}</p>
+            <div className="space-y-10 mb-12">
+              <div className="group">
+                <h4 className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-gray-400 mb-4 group-hover:text-black transition-colors">
+                  <Info className="w-3 h-3 text-[#C9A96E]" /> Description
+                </h4>
+                <p className="text-gray-600 text-base leading-relaxed font-light">{product.description || 'Une pièce d\'orfèvrerie textile issue de nos ateliers les plus prestigieux.'}</p>
               </div>
-              <div>
-                <h4 className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Tailles</h4>
-                <p className="text-gray-900 font-medium">{variant.sizes.join(', ')}</p>
+              
+              <div className="grid grid-cols-2 gap-10">
+                <div className="group">
+                  <h4 className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-400 mb-3 group-hover:text-black transition-colors">Coloris</h4>
+                  <div className="flex items-center gap-3">
+                    <span className="w-4 h-4 rounded-full border border-gray-100 shadow-sm" style={{ backgroundColor: variant.color.toLowerCase() }}></span>
+                    <p className="text-gray-900 font-bold text-sm tracking-widest uppercase">{variant.color}</p>
+                  </div>
+                </div>
+                <div className="group">
+                  <h4 className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-400 mb-3 group-hover:text-black transition-colors">Tailles</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {variant.sizes.map(s => (
+                      <span key={s} className="text-[10px] font-bold text-gray-900 border border-gray-100 px-3 py-1 rounded-md">{s}</span>
+                    ))}
+                  </div>
+                </div>
               </div>
-            </div>
-            
-            <div>
-              <h4 className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Entretien</h4>
-              <p className="text-gray-600 text-sm italic">{product.care_instructions || 'Lavage à la main recommandé, séchage à plat.'}</p>
+              
+              <div className="bg-gray-50/50 p-6 rounded-2xl border border-gray-100 italic">
+                <h4 className="text-[9px] font-black uppercase tracking-[0.3em] text-[#C9A96E] mb-2">Soin & Entretien</h4>
+                <p className="text-gray-500 text-xs leading-relaxed">{product.care_instructions || 'Lavage délicat à la main. Ne pas sécher en machine. Utiliser un filet de protection.'}</p>
+              </div>
             </div>
           </div>
           
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4 pt-10">
             <button
               onClick={() => { onAddToCart(product, variant as ProductVariant); onClose(); }}
-              className="w-full bg-black text-white text-[10px] font-bold uppercase tracking-widest py-4 rounded-full hover:bg-gray-800 transition-all shadow-xl"
+              className="w-full bg-black text-white text-[11px] font-bold uppercase tracking-[0.3em] py-6 rounded-2xl hover:bg-[#C9A96E] transition-all shadow-2xl hover:-translate-y-1 active:translate-y-0"
             >
               Ajouter au Panier
             </button>
             <button
               onClick={handleWhatsApp}
-              className="w-full bg-[#25D366] text-white text-[10px] font-bold uppercase tracking-widest py-4 rounded-full hover:bg-[#128C7E] transition-all shadow-xl flex items-center justify-center gap-2"
+              className="w-full bg-white border-2 border-gray-100 text-gray-900 text-[11px] font-bold uppercase tracking-[0.3em] py-6 rounded-2xl hover:border-[#25D366] hover:text-[#25D366] transition-all flex items-center justify-center gap-3 shadow-sm"
             >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.067 2.877 1.215 3.076.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" /></svg>
+              <MessageCircle className="w-5 h-5" />
               Commander sur WhatsApp
             </button>
           </div>
@@ -194,7 +208,7 @@ export const ShopPage = ({ onNavigate }: ShopPageProps) => {
 
   return (
     <FadeInOnLoad>
-      <div className="min-h-screen bg-white pt-36 pb-20 px-4 text-gray-900 font-sans">
+      <div className="min-h-screen bg-[#FDFDFD] pt-48 pb-20 px-4 text-gray-900 font-sans">
         {selectedProduct && (
           <ProductModal 
             product={selectedProduct} 
@@ -205,35 +219,35 @@ export const ShopPage = ({ onNavigate }: ShopPageProps) => {
 
         <div className="max-w-7xl mx-auto">
           {/* Titre principal */}
-          <div className="text-center mb-24 group">
-            <h1 className="text-5xl md:text-8xl font-bold font-serif text-gray-900 mb-8 tracking-tighter leading-none transition-colors duration-500 hover:text-[#C9A96E] cursor-default">
-              BIENVENUE DANS <br/>
-              <span className="italic">LA CHAMBRE</span>
+          <div className="text-center mb-32 group">
+            <p className="text-[10px] font-black text-[#C9A96E] uppercase tracking-[0.6em] mb-6">Maison de Lingerie</p>
+            <h1 className="text-6xl md:text-9xl font-bold font-serif text-gray-900 mb-10 tracking-tighter leading-none transition-colors duration-1000 hover:text-[#C9A96E] cursor-default">
+              CHAMBRE 69
             </h1>
-            <div className="w-24 h-px bg-[#C9A96E] mx-auto mb-8 transition-all duration-700 group-hover:w-48"></div>
-            <p className="text-gray-400 text-lg md:text-xl font-light max-w-2xl mx-auto italic tracking-wide transition-colors duration-500 hover:text-[#C9A96E]">
-              "Découvrez notre collection complète de lingerie haut de gamme, servez-vous."
+            <div className="w-32 h-0.5 bg-black mx-auto mb-10 transition-all duration-700 group-hover:w-64 group-hover:bg-[#C9A96E]"></div>
+            <p className="text-gray-400 text-lg md:text-2xl font-light max-w-2xl mx-auto italic tracking-wide transition-colors duration-1000 hover:text-black">
+              "L'élégance à fleur de peau, servie avec passion."
             </p>
           </div>
 
-          {/* Grille des Marques */}
+          {/* Grille des Marques (Bulles Or & Noir) */}
           <RevealOnScroll delay={0.1}>
-            <div className="mb-40 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-8">
+            <div className="mb-48 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-10">
               {brands.map((brand) => (
                 <div
                   key={brand.id}
                   onClick={() => scrollToBrand(brand.id)}
-                  className="group cursor-pointer flex flex-col items-center gap-6"
+                  className="group cursor-pointer flex flex-col items-center gap-8"
                 >
-                  <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-[#C9A96E]/40 group-hover:border-[#C9A96E] group-hover:scale-110 transition-all duration-700 shadow-[0_0_15px_rgba(201,169,110,0.1)] group-hover:shadow-[0_0_25px_rgba(201,169,110,0.3)] relative">
+                  <div className="w-28 h-28 rounded-full overflow-hidden border-2 border-black group-hover:border-[#C9A96E] group-hover:scale-110 transition-all duration-700 shadow-2xl relative">
                     <img
                       src={brand.image_url || 'https://via.placeholder.com/150'}
                       alt={brand.name}
-                      className="w-full h-full object-cover transition-all duration-700 group-hover:brightness-110"
-                      onError={(e) => (e.currentTarget.src = 'https://via.placeholder.com/150?text=' + brand.name)}
+                      className="w-full h-full object-cover transition-all duration-1000 group-hover:brightness-110"
                     />
+                    <div className="absolute inset-0 bg-black/5 opacity-100 group-hover:opacity-0 transition-opacity duration-700"></div>
                   </div>
-                  <h3 className="text-[10px] font-black text-gray-400 text-center uppercase tracking-[0.3em] group-hover:text-[#C9A96E] transition-colors">
+                  <h3 className="text-[11px] font-black text-black text-center uppercase tracking-[0.4em] group-hover:text-[#C9A96E] transition-all">
                     {brand.name}
                   </h3>
                 </div>
@@ -242,7 +256,7 @@ export const ShopPage = ({ onNavigate }: ShopPageProps) => {
           </RevealOnScroll>
 
           {/* Sections par Marque */}
-          {brands.map((brand) => {
+          {brands.map((brand, bIdx) => {
             const subcategories = Array.from(new Set(brand.products.map(p => p.subcategory).filter(Boolean))) as string[];
             const selectedSub = selectedSubcategories[brand.id] || (subcategories.length > 0 ? subcategories[0] : null);
             
@@ -260,19 +274,29 @@ export const ShopPage = ({ onNavigate }: ShopPageProps) => {
             const scrollKey = `${brand.id}-${selectedSub}-${selectedCol}`;
             const activeIndex = activeProductIndexes[scrollKey] || 0;
 
+            const isEven = bIdx % 2 === 0;
+
             return (
               <RevealOnScroll key={brand.id} delay={0.15}>
                 <div
                   ref={(el) => { brandSectionRefs.current[brand.id] = el; }}
-                  className="mb-48 scroll-mt-24"
+                  className={`mb-64 scroll-mt-32 p-12 md:p-20 rounded-[4rem] transition-all duration-1000 ${
+                    isEven ? 'bg-white shadow-xl border border-gray-50' : 'bg-gray-900 text-white shadow-2xl'
+                  }`}
                 >
-                  <div className="text-center mb-16 px-4">
-                    <h2 className="text-5xl md:text-7xl font-serif font-bold text-gray-900 mb-12 tracking-tight transition-colors duration-500 hover:text-[#C9A96E]">
+                  {/* Header de Marque */}
+                  <div className="text-center mb-24 px-4">
+                    <h2 className={`text-6xl md:text-8xl font-serif font-bold mb-16 tracking-tight transition-colors duration-1000 ${
+                      isEven ? 'text-gray-900 hover:text-[#C9A96E]' : 'text-white hover:text-[#C9A96E]'
+                    }`}>
                       {brand.name}
                     </h2>
                     
+                    {/* Sélecteur de Sous-catégories (Style Noir & Or) */}
                     {subcategories.length > 0 && (
-                      <div className="flex flex-wrap justify-center gap-6 mb-12 border-y border-gray-50 py-6">
+                      <div className={`flex flex-wrap justify-center gap-10 mb-16 border-y py-8 ${
+                        isEven ? 'border-gray-100' : 'border-white/10'
+                      }`}>
                         {subcategories.map((sub) => (
                           <button
                             key={sub}
@@ -284,31 +308,32 @@ export const ShopPage = ({ onNavigate }: ShopPageProps) => {
                                 return newCols;
                               });
                             }}
-                            className={`text-[10px] font-bold uppercase tracking-[0.3em] transition-all duration-300 relative pb-2 ${
+                            className={`text-[11px] font-black uppercase tracking-[0.4em] transition-all duration-300 relative pb-2 ${
                               selectedSub === sub
                                 ? 'text-[#C9A96E]'
-                                : 'text-gray-300 hover:text-gray-900'
+                                : isEven ? 'text-gray-300 hover:text-black' : 'text-gray-500 hover:text-white'
                             }`}
                           >
                             {sub}
                             {selectedSub === sub && (
-                              <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-[#C9A96E] animate-pulse"></span>
+                              <span className="absolute bottom-0 left-0 w-full h-1 bg-[#C9A96E] animate-pulse rounded-full"></span>
                             )}
                           </button>
                         ))}
                       </div>
                     )}
 
+                    {/* Sélecteur de Collections */}
                     {collections.length > 1 && (
-                      <div className="flex flex-wrap justify-center gap-3 mb-12">
+                      <div className="flex flex-wrap justify-center gap-4 mb-16">
                         {collections.map((col) => (
                           <button
                             key={col}
                             onClick={() => setSelectedCollections(prev => ({ ...prev, [`${brand.id}-${selectedSub}`]: col }))}
-                            className={`px-6 py-2 rounded-full text-[9px] font-bold uppercase tracking-widest transition-all duration-500 ${
+                            className={`px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 ${
                               selectedCol === col
-                                ? 'bg-[#C9A96E] text-white shadow-xl scale-105'
-                                : 'bg-white text-gray-400 border border-gray-100 hover:border-[#C9A96E] hover:text-[#C9A96E]'
+                                ? 'bg-[#C9A96E] text-white shadow-xl scale-110'
+                                : isEven ? 'bg-gray-50 text-gray-400 hover:bg-black hover:text-white' : 'bg-white/5 text-gray-500 hover:bg-white hover:text-black'
                             }`}
                           >
                             {col}
@@ -318,15 +343,16 @@ export const ShopPage = ({ onNavigate }: ShopPageProps) => {
                     )}
                   </div>
 
+                  {/* Produits */}
                   {finalProducts.length === 0 ? (
                     <div className="text-center py-20">
-                      <p className="text-gray-300 italic font-serif">Arrivage prochainement...</p>
+                      <p className="text-gray-300 italic font-serif text-2xl">Collection à venir...</p>
                     </div>
                   ) : (
                     <div className="relative">
                       <div
                         ref={(el) => { scrollContainerRefs.current[scrollKey] = el; }}
-                        className="flex overflow-x-auto gap-12 pb-16 px-4 hide-scrollbar"
+                        className="flex overflow-x-auto gap-16 pb-16 px-4 hide-scrollbar"
                         style={{ scrollSnapType: 'x mandatory' }}
                       >
                         {finalProducts.map((item, idx) => {
@@ -336,40 +362,40 @@ export const ShopPage = ({ onNavigate }: ShopPageProps) => {
                             <div
                               key={item.id}
                               className={`flex-shrink-0 transition-all duration-1000 ease-in-out scroll-snap-align-center ${
-                                isActive ? 'scale-100 opacity-100' : 'scale-90 opacity-20 grayscale hover:grayscale-0 hover:opacity-100'
+                                isActive ? 'scale-100 opacity-100' : 'scale-90 opacity-20 grayscale'
                               }`}
-                              style={{ width: '320px' }}
+                              style={{ width: '340px' }}
                             >
                               <div
-                                className="relative bg-white overflow-hidden rounded-[2.5rem] group cursor-pointer shadow-2xl border border-gray-50"
-                                style={{ height: '480px' }}
+                                className={`relative overflow-hidden rounded-[3rem] group cursor-pointer shadow-2xl ${
+                                  isEven ? 'bg-gray-50' : 'bg-white/5'
+                                }`}
+                                style={{ height: '520px' }}
                               >
                                 <img
                                   src={item.image_url}
                                   alt={item.name}
-                                  className="w-full h-full object-cover transition-all duration-[1500ms] group-hover:scale-110"
-                                  onError={(e) => (e.currentTarget.src = 'https://via.placeholder.com/500?text=' + item.name)}
+                                  className="w-full h-full object-cover transition-all duration-[2s] group-hover:scale-110"
                                 />
                                 
-                                {/* Overlay On Hover - Buttons appear ONLY on hover */}
-                                <div className="absolute inset-0 bg-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col items-center justify-center gap-4">
+                                <div className="absolute inset-0 bg-transparent opacity-0 group-hover:opacity-100 transition-all duration-700 flex flex-col items-center justify-center gap-5">
                                   <button
                                     onClick={(e) => { e.stopPropagation(); handleAddToCart(item, variant); }}
-                                    className="bg-black text-white text-[10px] font-bold uppercase tracking-[0.2em] px-8 py-3 rounded-full hover:bg-[#C9A96E] transition-all shadow-2xl transform translate-y-4 group-hover:translate-y-0 duration-500"
+                                    className="bg-[#C9A96E] text-white text-[11px] font-black uppercase tracking-[0.3em] px-10 py-5 rounded-2xl hover:bg-black transition-all shadow-2xl transform translate-y-6 group-hover:translate-y-0 duration-700"
                                   >
-                                    Ajouter au Panier
+                                    Panier
                                   </button>
                                   <button
                                     onClick={(e) => { e.stopPropagation(); setSelectedProduct(item); }}
-                                    className="bg-white text-black text-[10px] font-bold uppercase tracking-[0.2em] px-8 py-3 rounded-full hover:bg-gray-100 transition-all shadow-2xl transform translate-y-4 group-hover:translate-y-0 duration-700"
+                                    className="bg-white text-black text-[11px] font-black uppercase tracking-[0.3em] px-10 py-5 rounded-2xl hover:bg-[#C9A96E] hover:text-white transition-all shadow-2xl transform translate-y-6 group-hover:translate-y-0 duration-1000"
                                   >
                                     Détails
                                   </button>
                                 </div>
                               </div>
-                              <div className={`mt-10 text-center transition-all duration-1000 ${isActive ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-                                <h5 className="text-2xl font-serif font-bold text-gray-900 mb-2">{item.name}</h5>
-                                <p className="text-[9px] text-[#C9A96E] font-black uppercase tracking-[0.4em]">{selectedCol || 'Collection Exclusive'}</p>
+                              <div className={`mt-12 text-center transition-all duration-1000 ${isActive ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+                                <h5 className={`text-3xl font-serif font-bold mb-4 ${isEven ? 'text-gray-900' : 'text-white'}`}>{item.name}</h5>
+                                <p className="text-[10px] text-[#C9A96E] font-black uppercase tracking-[0.5em]">{selectedCol || 'Collection Exclusive'}</p>
                               </div>
                             </div>
                           );
