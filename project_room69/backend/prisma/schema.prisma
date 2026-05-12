@@ -32,6 +32,7 @@ model Product {
   brand             Brand?           @relation(fields: [brand_id], references: [id])
   brand_id          String?
   subcategory       String?
+  collection        String?
   name              String
   slug              String           @unique
   description       String?
