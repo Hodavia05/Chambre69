@@ -46,103 +46,91 @@ export const AuthPage = ({ onAuthSuccess, onNavigate }: AuthPageProps) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#FDFDFD] relative overflow-hidden px-4 font-sans">
-      {/* Premium Background Elements */}
-      <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-[#C9A96E]/5 rounded-full blur-[120px] animate-pulse"></div>
-      <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-[#C9A96E]/5 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }}></div>
+    <div className="min-h-screen flex items-center justify-center bg-white relative overflow-hidden px-4 font-sans pt-32 pb-20">
+      {/* Background Decor */}
+      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#C9A96E]/10 rounded-full blur-[120px]"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-gray-200 rounded-full blur-[120px]"></div>
 
-      <div className="w-full max-w-lg animate-in fade-in slide-in-from-bottom-8 duration-1000">
-        {/* Back Button */}
-        <button 
-          onClick={() => onNavigate('home')}
-          className="group flex items-center gap-2 text-gray-400 hover:text-[#C9A96E] transition-all mb-8 ml-4"
-        >
-          <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-          <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Retour à l'accueil</span>
-        </button>
-
-        {/* Premium Glassmorphic Card */}
+      <div className="w-full max-w-xl animate-in fade-in slide-in-from-bottom-8 duration-1000 relative z-10">
         <div className="relative group">
-          {/* External Gold Glow */}
-          <div className="absolute -inset-1 bg-gradient-to-r from-[#C9A96E]/20 via-[#C9A96E]/40 to-[#C9A96E]/20 rounded-[3rem] blur-xl opacity-20 group-hover:opacity-40 transition-opacity duration-1000"></div>
+          {/* External Gold Border Glow */}
+          <div className="absolute -inset-0.5 bg-[#C9A96E] rounded-[3rem] opacity-30 blur-sm group-hover:opacity-100 transition-opacity duration-700"></div>
           
-          <div className="relative bg-white/60 backdrop-blur-3xl border-2 border-[#C9A96E]/30 p-10 md:p-14 rounded-[3rem] shadow-2xl overflow-hidden">
-            {/* Top Shine */}
-            <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-white/40 to-transparent pointer-events-none"></div>
-            
-            <div className="text-center mb-12 relative">
-              <h1 className="text-4xl font-serif font-bold text-gray-900 mb-4 tracking-tight">
+          {/* Glassmorphic Card - Transparent Gray Style */}
+          <div className="relative bg-gray-400/10 backdrop-blur-3xl border-[3px] border-[#C9A96E] p-10 md:p-16 rounded-[3rem] shadow-2xl">
+            <div className="text-center mb-12">
+              <h1 className="text-4xl md:text-5xl font-serif font-bold text-gray-900 mb-4 tracking-tighter">
                 {isLogin ? 'Ravi de vous revoir' : 'Rejoindre la Maison'}
               </h1>
-              <div className="w-12 h-0.5 bg-[#C9A96E] mx-auto mb-4"></div>
-              <p className="text-gray-400 text-xs italic tracking-wide">
+              <div className="w-16 h-1 bg-[#C9A96E] mx-auto mb-6 rounded-full"></div>
+              <p className="text-gray-500 text-sm italic tracking-wide">
                 {isLogin ? 'Entrez vos identifiants pour accéder à votre univers.' : 'Créez votre compte pour une expérience personnalisée.'}
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-8 relative">
+            <form onSubmit={handleSubmit} className="space-y-8">
               {!isLogin && (
-                <div className="space-y-2 group/field">
-                  <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 group-focus-within/field:text-[#C9A96E] transition-colors">
-                    <UserIcon className="w-3 h-3" /> Nom Complet
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 ml-1">
+                    <UserIcon className="w-3 h-3 text-[#C9A96E]" /> Nom Complet
                   </label>
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full bg-white/40 border border-gray-100 rounded-2xl px-6 py-4 text-sm focus:outline-none focus:border-[#C9A96E] focus:ring-4 focus:ring-[#C9A96E]/5 transition-all placeholder-gray-300 shadow-inner"
+                    className="w-full bg-white/20 border border-gray-200 rounded-2xl px-6 py-5 text-sm focus:outline-none focus:border-[#C9A96E] transition-all placeholder-gray-400"
                     placeholder="Sarah Martin"
                     required
                   />
                 </div>
               )}
 
-              <div className="space-y-2 group/field">
-                <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 group-focus-within/field:text-[#C9A96E] transition-colors">
-                  <Mail className="w-3 h-3" /> Email
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 ml-1">
+                  <Mail className="w-3 h-3 text-[#C9A96E]" /> Email
                 </label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-white/40 border border-gray-100 rounded-2xl px-6 py-4 text-sm focus:outline-none focus:border-[#C9A96E] focus:ring-4 focus:ring-[#C9A96E]/5 transition-all placeholder-gray-300 shadow-inner"
+                  className="w-full bg-white/20 border border-gray-200 rounded-2xl px-6 py-5 text-sm focus:outline-none focus:border-[#C9A96E] transition-all placeholder-gray-400"
                   placeholder="votre@email.com"
                   required
                 />
               </div>
 
-              <div className="space-y-2 group/field">
+              <div className="space-y-2">
                 <div className="flex justify-between items-center px-1">
-                  <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 group-focus-within/field:text-[#C9A96E] transition-colors">
-                    <Lock className="w-3 h-3" /> Mot de passe
+                  <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">
+                    <Lock className="w-3 h-3 text-[#C9A96E]" /> Mot de passe
                   </label>
-                  {isLogin && (
-                    <button type="button" className="text-[9px] font-bold text-[#C9A96E] hover:text-black transition-colors uppercase tracking-widest">
-                      Oublié ?
-                    </button>
-                  )}
                 </div>
                 <div className="relative">
                   <input
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full bg-white/40 border border-gray-100 rounded-2xl px-6 py-4 text-sm focus:outline-none focus:border-[#C9A96E] focus:ring-4 focus:ring-[#C9A96E]/5 transition-all placeholder-gray-300 shadow-inner pr-14"
+                    className="w-full bg-white/20 border border-gray-200 rounded-2xl px-6 py-5 text-sm focus:outline-none focus:border-[#C9A96E] transition-all placeholder-gray-400 pr-16"
                     placeholder="••••••••"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-300 hover:text-[#C9A96E] transition-colors"
+                    className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#C9A96E] transition-colors"
                   >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+                <div className="flex justify-end px-1 mt-2">
+                  <button type="button" className="text-[10px] font-bold text-[#C9A96E] hover:text-black transition-colors uppercase tracking-widest">
+                    Modifier le mot de passe ?
                   </button>
                 </div>
               </div>
 
               {error && (
-                <div className="bg-red-50/50 border border-red-100 rounded-xl p-4 animate-shake">
+                <div className="bg-red-50/50 border border-red-100 rounded-xl p-4">
                   <p className="text-red-500 text-[10px] text-center font-bold uppercase tracking-widest">{error}</p>
                 </div>
               )}
@@ -150,33 +138,32 @@ export const AuthPage = ({ onAuthSuccess, onNavigate }: AuthPageProps) => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full relative group/btn overflow-hidden rounded-2xl bg-black text-white text-[10px] font-bold uppercase tracking-[0.4em] py-5 transition-all hover:bg-gray-900 active:scale-95 disabled:opacity-50 shadow-2xl"
+                className="w-full bg-black text-white text-[11px] font-black uppercase tracking-[0.4em] py-6 rounded-2xl hover:bg-[#C9A96E] transition-all shadow-2xl disabled:opacity-50"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000"></div>
-                {loading ? 'Traitement en cours...' : (isLogin ? 'Se Connecter' : 'Créer mon compte')}
+                {loading ? 'Chargement...' : (isLogin ? 'Se Connecter' : 'S\'inscrire')}
               </button>
             </form>
 
-            <div className="mt-12 text-center relative">
-              <div className="flex items-center gap-4 mb-8">
-                <div className="h-px bg-gray-100 flex-1"></div>
-                <span className="text-[9px] text-gray-300 font-bold uppercase tracking-[0.2em]">ou</span>
-                <div className="h-px bg-gray-100 flex-1"></div>
-              </div>
+            <div className="mt-12 text-center">
               <button
                 onClick={() => { setIsLogin(!isLogin); setError(''); }}
-                className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 hover:text-[#C9A96E] transition-all hover:tracking-[0.4em]"
+                className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 hover:text-[#C9A96E] transition-all"
               >
-                {isLogin ? "Nouveau ici ? S'inscrire gratuitement" : "Déjà membre ? Se connecter à l'espace"}
+                {isLogin ? "Nouveau ici ? S'inscrire" : "Déjà membre ? Se connecter"}
               </button>
             </div>
           </div>
         </div>
-        
-        {/* Footer info */}
-        <p className="mt-12 text-center text-[10px] text-gray-300 font-medium uppercase tracking-[0.2em]">
-          &copy; 2026 Maison Chambre 69 • Tous droits réservés
-        </p>
+
+        <div className="mt-12 text-center">
+          <button
+            onClick={() => onNavigate('home')}
+            className="group flex items-center justify-center gap-2 text-gray-400 hover:text-black transition-colors mx-auto"
+          >
+            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+            <span className="text-[10px] font-bold uppercase tracking-widest">Retour à la Maison</span>
+          </button>
+        </div>
       </div>
     </div>
   );
