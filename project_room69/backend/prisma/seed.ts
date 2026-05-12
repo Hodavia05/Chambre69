@@ -1,105 +1,125 @@
 import { PrismaClient } from '@prisma/client';
+import fs from 'fs';
+import path from 'path';
 
 const prisma = new PrismaClient();
 
+const ROOT_PATH = path.join(__dirname, '../../..');
+const BRANDS_FOLDERS = [
+  'curvy kate', 'Dita von teese', 'Elomi', 'Empreinte', 
+  'Fantasie', 'Freya', 'Louisa bracq', 'Wacoal', 'Ysabel Mora'
+];
+
 async function main() {
+  console.log('Starting dynamic seeding...');
+  
   // Clean DB
   await prisma.productVariant.deleteMany();
   await prisma.product.deleteMany();
   await prisma.brand.deleteMany();
   await prisma.category.deleteMany();
 
-  // Create a default category
   const defaultCategory = await prisma.category.create({
-    data: {
-      name: 'Lingerie',
-      slug: 'lingerie',
-      description: 'Toute la lingerie'
-    }
+    data: { name: 'Lingerie', slug: 'lingerie', description: 'Toute la lingerie' }
   });
 
-  const brands = [
-    { name: 'Curvy Kate', image_url: 'http://localhost:5000/images/curvy kate/brand.jpg' },
-    { name: 'Dita Von Teese', image_url: 'http://localhost:5000/images/Dita von teese/brand.jpg' },
-    { name: 'Elomi', image_url: 'http://localhost:5000/images/Elomi/brand.jpg' },
-    { name: 'Empreinte', image_url: 'http://localhost:5000/images/Empreinte/brand.jpg' },
-    { name: 'Fantasie', image_url: 'http://localhost:5000/images/Fantasie/brand.jpg' },
-    { name: 'Freya', image_url: 'http://localhost:5000/images/Freya/brand.jpg' },
-    { name: 'Louisa bracq', image_url: 'http://localhost:5000/images/Louisa bracq/brand.jpg' },
-    { name: 'Wacoal', image_url: 'http://localhost:5000/images/Wacoal/brand.jpg' },
-    { name: 'Ysabel Mora', image_url: 'http://localhost:5000/images/Ysabel Mora/brand.jpg' },
-    { name: 'Quelques accessoires', image_url: 'http://localhost:5000/images/accessoires.jpg' },
-    { name: 'Senteurs', image_url: 'http://localhost:5000/images/senteurs.jpg' },
-    { name: 'Tenues Spéciales', image_url: 'http://localhost:5000/images/tenues_speciales.jpg' }
-  ];
-
-  const createdBrands = [];
-  for (const b of brands) {
+  for (const brandName of BRANDS_FOLDERS) {
+    console.log(`Processing brand: ${brandName}`);
+    
     const brand = await prisma.brand.create({
       data: {
-        name: b.name,
-        image_url: b.image_url,
-        description: `Collection haut de gamme de ${b.name}`
+        name: brandName,
+        image_url: `http://localhost:5000/images/${brandName}/brand.jpg`, // Placeholder
+        description: `Collection haut de gamme de ${brandName}`
       }
     });
-    createdBrands.push(brand);
-  }
 
-  // Sample Products for brands with subcategories
-  const sampleProducts = [
-    {
-      name: 'Soutien-gorge Taegan',
-      slug: 'soutien-gorge-taegan',
-      brand_id: createdBrands.find(b => b.name === 'Elomi')?.id,
-      subcategory: 'Soutien gorge',
-      image_url: 'http://localhost:5000/images/Elomi/soutien gorge/Soutien gorge collection taegan/TEAGAN_RAINBOW_UW-PADDED-HALF-CUP-BRA_EL302615_CUTOUT_WEB_SS26.jpg',
-      variants: [{ color: 'Rainbow', sizes: ['90D', '95E'] }]
-    },
-    {
-      name: 'Slip Taegan',
-      slug: 'slip-taegan',
-      brand_id: createdBrands.find(b => b.name === 'Elomi')?.id,
-      subcategory: 'Slip',
-      image_url: 'http://localhost:5000/images/Elomi/slips/slip1.jpg',
-      variants: [{ color: 'Rainbow', sizes: ['M', 'L'] }]
-    },
-    {
-      name: 'Soutien-gorge Victory',
-      slug: 'soutien-gorge-victory',
-      brand_id: createdBrands.find(b => b.name === 'Curvy Kate')?.id,
-      subcategory: 'Soutien',
-      image_url: 'http://localhost:5000/images/curvy kate/soutien1.jpg',
-      variants: [{ color: 'Noir', sizes: ['90E', '95F'] }]
-    },
-    {
-      name: 'Slip Victory',
-      slug: 'slip-victory',
-      brand_id: createdBrands.find(b => b.name === 'Curvy Kate')?.id,
-      subcategory: 'Slip',
-      image_url: 'http://localhost:5000/images/curvy kate/slip1.jpg',
-      variants: [{ color: 'Noir', sizes: ['S', 'M', 'L'] }]
+    const brandPath = path.join(ROOT_PATH, brandName);
+    if (!fs.existsSync(brandPath)) {
+      console.warn(`Path not found: ${brandPath}`);
+      continue;
     }
-  ];
 
-  for (const p of sampleProducts) {
-    if (p.brand_id) {
-      await prisma.product.create({
-        data: {
-          name: p.name,
-          slug: p.slug,
-          brand_id: p.brand_id,
-          subcategory: p.subcategory,
-          category_id: defaultCategory.id,
-          image_url: p.image_url,
-          variants: {
-            create: p.variants
-          }
+    // Scan subdirectories
+    const subdirs = fs.readdirSync(brandPath, { withFileTypes: true });
+    for (const subdir of subdirs) {
+      if (subdir.isDirectory()) {
+        const subcategoryName = subdir.name;
+        const subdirPath = path.join(brandPath, subcategoryName);
+        
+        // Scan images in subcategory
+        const files = scanImages(subdirPath);
+        for (const file of files) {
+          const relativePath = path.relative(ROOT_PATH, file).replace(/\\/g, '/');
+          const fileName = path.basename(file, path.extname(file));
+          
+          await prisma.product.create({
+            data: {
+              name: fileName,
+              slug: `${brandName.toLowerCase().replace(/\s+/g, '-')}-${subcategoryName.toLowerCase().replace(/\s+/g, '-')}-${fileName.toLowerCase().replace(/\s+/g, '-')}`,
+              brand_id: brand.id,
+              subcategory: subcategoryName,
+              category_id: defaultCategory.id,
+              image_url: `http://localhost:5000/images/${relativePath}`,
+              variants: {
+                create: [{ color: 'Standard', sizes: ['S', 'M', 'L'] }]
+              }
+            }
+          });
         }
-      });
+      } else if (subdir.isFile() && isImage(subdir.name)) {
+        // Image directly in brand folder
+        const relativePath = path.relative(ROOT_PATH, path.join(brandPath, subdir.name)).replace(/\\/g, '/');
+        const fileName = path.basename(subdir.name, path.extname(subdir.name));
+
+        await prisma.product.create({
+          data: {
+            name: fileName,
+            slug: `${brandName.toLowerCase().replace(/\s+/g, '-')}-${fileName.toLowerCase().replace(/\s+/g, '-')}`,
+            brand_id: brand.id,
+            category_id: defaultCategory.id,
+            image_url: `http://localhost:5000/images/${relativePath}`,
+            variants: {
+              create: [{ color: 'Standard', sizes: ['S', 'M', 'L'] }]
+            }
+          }
+        });
+      }
     }
   }
 
-  console.log('Seed completed successfully');
+  // Handle Special Sections
+  const specialSections = ['Quelques accessoires', 'Senteurs', 'Tenues Spéciales'];
+  for (const section of specialSections) {
+    await prisma.brand.create({
+      data: {
+        name: section,
+        description: `Collection ${section}`
+      }
+    });
+  }
+
+  console.log('Dynamic seed completed successfully');
+}
+
+function scanImages(dir: string): string[] {
+  let results: string[] = [];
+  const list = fs.readdirSync(dir);
+  list.forEach((file) => {
+    const filePath = path.join(dir, file);
+    const stat = fs.statSync(filePath);
+    if (stat && stat.isDirectory()) {
+      results = results.concat(scanImages(filePath));
+    } else if (isImage(file)) {
+      results.push(filePath);
+    }
+  });
+  return results;
+}
+
+function isImage(filename: string): boolean {
+  const ext = path.extname(filename).toLowerCase();
+  return ['.jpg', '.jpeg', '.png', '.webp'].includes(ext);
 }
 
 main()
