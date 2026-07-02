@@ -61,8 +61,11 @@ Nous avons implémenté une authentification sécurisée et esthétique :
 
 ---
 
-## 🤖 CI/CD & Déploiement
-Un workflow **GitHub Actions** est configuré dans `.github/workflows/main.yml` pour valider chaque build automatiquement, garantissant la stabilité du projet à chaque mise à jour.
+## 🚀 Déploiement
+Un workflow **GitHub Actions** est configuré dans `.github/workflows/main.yml` pour valider chaque build automatiquement et garantir la stabilité du projet.
+
+### Liaison avec le guide de déploiement
+Pour la procédure complète de déploiement avec **Neon**, **Render**, et **Vercel**, consultez `DEPLOYMENT.md`.
 
 ---
 *Développé avec passion pour l'élégance.*
