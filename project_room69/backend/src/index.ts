@@ -75,6 +75,26 @@ app.get('/api/shop-data', async (req, res) => {
   }
 });
 
+app.get('/api/products', async (req, res) => {
+  const { featured } = req.query;
+  try {
+    const filter: any = {};
+    if (featured === 'true') {
+      filter.is_featured = true;
+    }
+
+    const products = await prisma.product.findMany({
+      where: filter,
+      include: { variants: true, brand: true, category: true },
+      orderBy: { created_at: 'desc' }
+    });
+    res.json(products);
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    res.status(500).json({ error: 'Failed to fetch products' });
+  }
+});
+
 app.get('/api/products/:slug', async (req, res) => {
   const { slug } = req.params;
   try {

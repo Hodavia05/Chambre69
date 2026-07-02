@@ -2,8 +2,10 @@ import { PrismaClient } from '@prisma/client';
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
+import mammoth from 'mammoth';
 
 const prisma = new PrismaClient();
+const descriptionCache = new Map<string, string | undefined>();
 
 const ROOT_PATH = path.join(__dirname, '../../..');
 
@@ -84,6 +86,14 @@ async function createProduct(filePath: string, brandId: string, categoryId: stri
   const relativePath = path.relative(ROOT_PATH, filePath).replace(/\\/g, '/');
   const fileName = path.basename(filePath, path.extname(filePath));
   const hash = crypto.createHash('md5').update(relativePath).digest('hex').substring(0, 6);
+
+  const productDir = path.dirname(filePath);
+  let descriptionText = descriptionCache.get(productDir);
+  if (descriptionText === undefined) {
+    const docxPath = findDescriptionFile(productDir);
+    descriptionText = docxPath ? await extractDocxText(docxPath) : undefined;
+    descriptionCache.set(productDir, descriptionText);
+  }
   
   const cleanSub = subcategory ? subcategory.trim() : undefined;
   let cleanCol = collection ? collection.trim() : undefined;
@@ -114,6 +124,7 @@ async function createProduct(filePath: string, brandId: string, categoryId: stri
         subcategory: cleanSub,
         collection: cleanCol || 'Général',
         category_id: categoryId,
+        description: descriptionText,
         image_url: imageUrl,
         variants: {
           create: [{ color: 'Standard', sizes: ['S', 'M', 'L'] }]
@@ -123,6 +134,25 @@ async function createProduct(filePath: string, brandId: string, categoryId: stri
   } catch (e) {
     // console.error(`Failed to create ${fileName}:`, e);
   }
+}
+
+async function extractDocxText(docxPath: string): Promise<string | undefined> {
+  try {
+    const result = await mammoth.extractRawText({ path: docxPath });
+    return result.value.trim().replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim() || undefined;
+  } catch (error) {
+    console.warn(`  [WARN] Impossible de parser ${docxPath}:`, error);
+    return undefined;
+  }
+}
+
+function findDescriptionFile(directory: string): string | undefined {
+  const files = fs.readdirSync(directory);
+  const docxFile = files.find((name) => {
+    const ext = path.extname(name).toLowerCase();
+    return ext === '.docx' && !name.startsWith('~$');
+  });
+  return docxFile ? path.join(directory, docxFile) : undefined;
 }
 
 function isImage(filename: string): boolean {
