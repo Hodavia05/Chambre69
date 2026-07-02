@@ -58,7 +58,7 @@ function App() {
             <Route path="/" element={<HomePage onNavigate={handleNavigate} />} />
             <Route path="/shop" element={<ShopPage onNavigate={handleNavigate} />} />
             <Route path="/product/:slug" element={<ProductPage onNavigate={handleNavigate} />} />
-            <Route path="/cart" element={<CartPage onNavigate={handleNavigate} />} />
+            <Route path="/cart" element={<CartPage onNavigate={handleNavigate} user={user} />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/login" element={<AuthPage onAuthSuccess={handleAuthSuccess} onNavigate={handleNavigate} />} />
