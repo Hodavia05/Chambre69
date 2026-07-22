@@ -35,6 +35,41 @@ interface Brand {
   products: (Product & { variants: ProductVariant[] })[];
 }
 
+const formatLabel = (value?: string | null) => {
+  if (!value) return '';
+  return value
+    .replace(/\bcollection\b/gi, '')
+    .replace(/\bbrief\b/gi, '')
+    .replace(/\bbriefs\b/gi, '')
+    .replace(/\bSoutien gorge\b/gi, 'Soutien')
+    .replace(/\s+/g, ' ')
+    .trim();
+};
+
+const formatBrandName = (name: string) => {
+  const mapping: Record<string, string> = {
+    'ysabel mora': 'Ysabel Mora',
+    'curvy kate': 'Curvy Kate',
+    'dita von teese': 'Dita Von Teese',
+    'linga dore': 'LingaDore',
+    'louisa bracq': 'Louisa Bracq',
+    'lingerie traditionnelle africaine': 'Maternité et Grossesse',
+    'miraclesuit': 'Miraclesuit',
+    'krizalid': 'Krizalid'
+  };
+
+  const normalized = name.trim().toLowerCase();
+  return mapping[normalized] || name;
+};
+
+const getSubcategorySortIndex = (value: string) => {
+  const normalized = value.trim().toLowerCase();
+  if (normalized.includes('soutien')) return 0;
+  if (normalized.includes('ensemble')) return 1;
+  if (normalized.includes('slip')) return 2;
+  return 99;
+};
+
 interface ShopPageProps {
   onNavigate: (page: string, data?: any) => void;
 }
@@ -125,6 +160,7 @@ const ProductModal = ({ product, onClose, onAddToCart }: { product: Product & { 
 export const ShopPage = ({ onNavigate }: ShopPageProps) => {
   const [brands, setBrands] = useState<Brand[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
   const [selectedSubcategories, setSelectedSubcategories] = useState<Record<string, string>>({});
   const [selectedCollections, setSelectedCollections] = useState<Record<string, string>>({});
   const [selectedProduct, setSelectedProduct] = useState<(Product & { variants: ProductVariant[] }) | null>(null);
@@ -139,9 +175,14 @@ export const ShopPage = ({ onNavigate }: ShopPageProps) => {
       try {
         const response = await fetch(`${API_URL}/shop-data`);
         const data = await response.json();
-        const cleanBrands = data.brands.filter((b: Brand) => 
-          !['backend', 'project_room69', 'node_modules', 'project', '.git', '.vscode'].includes(b.name.toLowerCase())
-        );
+        const cleanBrands = (data.brands || [])
+          .filter((b: Brand) => !['backend', 'project_room69', 'node_modules', 'project', '.git', '.vscode'].includes(b.name.toLowerCase()))
+          .map((brand: Brand) => ({
+            ...brand,
+            name: formatBrandName(brand.name),
+            description: brand.description || 'Collection exclusive',
+            image_url: brand.image_url || brand.products?.[0]?.image_url || ''
+          }));
         setBrands(cleanBrands);
       } catch (error) {
         console.error('Error fetching shop data:', error);
@@ -232,6 +273,17 @@ export const ShopPage = ({ onNavigate }: ShopPageProps) => {
             </p>
           </div>
 
+          <div className="mb-16 mx-auto max-w-2xl">
+            <label className="block text-[10px] font-black uppercase tracking-[0.4em] text-[#C9A96E] mb-4 text-center">Recherche produits</label>
+            <input
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Rechercher par nom, collection ou sous-catégorie"
+              className="w-full rounded-full border border-gray-200 bg-white px-6 py-4 text-sm text-gray-700 shadow-sm outline-none ring-0 focus:border-[#C9A96E]"
+            />
+            <p className="mt-3 text-center text-sm text-gray-500">Les résultats se filtrent instantanément selon votre recherche.</p>
+          </div>
+
           {/* Grille des Marques (Bulles Or & Noir) */}
           <RevealOnScroll delay={0.1}>
             <div className="mb-48 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-10">
@@ -258,12 +310,21 @@ export const ShopPage = ({ onNavigate }: ShopPageProps) => {
 
           {/* Sections par Marque */}
           {brands.map((brand, bIdx) => {
-            const subcategories = Array.from(new Set(brand.products.map(p => p.subcategory).filter(Boolean))) as string[];
-            const selectedSub = selectedSubcategories[brand.id] || (subcategories.length > 0 ? subcategories[0] : null);
+            const normalizedSearch = searchTerm.trim().toLowerCase();
+            const searchableProducts = normalizedSearch
+              ? brand.products.filter((product) => {
+                  const text = `${product.name} ${product.subcategory || ''} ${product.collection || ''} ${product.description || ''}`.toLowerCase();
+                  return text.includes(normalizedSearch);
+                })
+              : brand.products;
+
+            const subcategories = Array.from(new Set(searchableProducts.map(p => p.subcategory).filter(Boolean))) as string[];
+            const sortedSubcategories = [...subcategories].sort((a, b) => getSubcategorySortIndex(a) - getSubcategorySortIndex(b) || a.localeCompare(b));
+            const selectedSub = selectedSubcategories[brand.id] || (sortedSubcategories.length > 0 ? sortedSubcategories[0] : null);
             
             const filteredBySub = selectedSub 
-              ? brand.products.filter(p => p.subcategory === selectedSub)
-              : brand.products;
+              ? searchableProducts.filter(p => p.subcategory === selectedSub)
+              : searchableProducts;
 
             const collections = Array.from(new Set(filteredBySub.map(p => p.collection).filter(Boolean))) as string[];
             const selectedCol = selectedCollections[`${brand.id}-${selectedSub}`] || (collections.length > 0 ? collections[0] : null);
@@ -294,11 +355,11 @@ export const ShopPage = ({ onNavigate }: ShopPageProps) => {
                     </h2>
                     
                     {/* Sélecteur de Sous-catégories */}
-                    {subcategories.length > 0 && (
+                    {sortedSubcategories.length > 0 && (
                       <div className={`flex flex-wrap justify-center gap-10 mb-16 border-y py-8 ${
                         isEven ? 'border-gray-100' : 'border-white/10'
                       }`}>
-                        {subcategories.map((sub) => (
+                        {sortedSubcategories.map((sub) => (
                           <button
                             key={sub}
                             onClick={() => {
@@ -315,7 +376,7 @@ export const ShopPage = ({ onNavigate }: ShopPageProps) => {
                                 : isEven ? 'text-gray-300 hover:text-black' : 'text-gray-500 hover:text-white'
                             }`}
                           >
-                            {sub}
+                            {formatLabel(sub)}
                             {selectedSub === sub && (
                               <span className="absolute bottom-0 left-0 w-full h-1 bg-[#C9A96E] animate-pulse rounded-full"></span>
                             )}
@@ -337,7 +398,7 @@ export const ShopPage = ({ onNavigate }: ShopPageProps) => {
                                 : isEven ? 'bg-gray-50 text-gray-400 hover:bg-black hover:text-white' : 'bg-white/5 text-gray-500 hover:bg-white hover:text-black'
                             }`}
                           >
-                            {col}
+                            {formatLabel(col)}
                           </button>
                         ))}
                       </div>
@@ -395,8 +456,8 @@ export const ShopPage = ({ onNavigate }: ShopPageProps) => {
                                 </div>
                               </div>
                               <div className={`mt-12 text-center transition-all duration-1000 ${isActive ? 'opacity-100 translate-y-0' : 'opacity-100 translate-y-0'}`}>
-                                <h5 className={`text-3xl font-serif font-bold mb-4 ${isEven ? 'text-gray-900' : 'text-white'}`}>{item.name}</h5>
-                                <p className="text-[10px] text-[#C9A96E] font-black uppercase tracking-[0.5em]">{selectedCol || 'Collection Exclusive'}</p>
+                                <h5 className={`text-3xl font-serif font-bold mb-4 ${isEven ? 'text-gray-900' : 'text-white'}`}>{formatLabel(item.name)}</h5>
+                                <p className="text-[10px] text-[#C9A96E] font-black uppercase tracking-[0.5em]">{formatLabel(selectedCol || 'Collection Exclusive')}</p>
                               </div>
                             </div>
                           );
